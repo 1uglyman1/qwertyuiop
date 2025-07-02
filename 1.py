@@ -1,13 +1,13 @@
 import subprocess
 import os
 
-# 设置环境变量确保UTF-8编码
+# 设置UTF-8环境变量
 env = os.environ.copy()
 env["PYTHONIOENCODING"] = "utf-8"
 env["PYTHONUTF8"] = "1"
 
 try:
-    # 执行test.exe并捕获输出，但不尝试打印
+    # 执行test.exe
     result = subprocess.run(
         "test.exe",
         input="http://www.xfyun.cn",
@@ -19,31 +19,39 @@ try:
         check=True
     )
     
-    # 将输出保存到文件而不是打印到控制台
+    # 将输出保存到文件
     with open("test_output.txt", "w", encoding="utf-8") as f:
         f.write("Standard Output:\n")
         f.write(result.stdout)
         f.write("\n\nStandard Error:\n")
         f.write(result.stderr)
     
-    print(f"test.exe 执行成功，返回代码: {result.returncode}")
-    print("输出已保存到 test_output.txt")
+    print("test.exe executed successfully. Return code:", result.returncode)
+    print("Output saved to test_output.txt")
     
 except subprocess.CalledProcessError as e:
-    # 不尝试打印可能包含非ASCII字符的输出
-    print(f"执行失败: Command '{' '.join(e.cmd)}' 返回非零状态码 {e.returncode}")
+    # 纯ASCII错误消息
+    error_msg = "Execution failed: Command '{}' returned non-zero exit status {}".format(
+        ' '.join(e.cmd), e.returncode)
     
-    # 将错误信息保存到文件
+    # 尝试打印ASCII错误消息
+    try:
+        print(error_msg)
+    except:
+        # 如果打印失败，则使用更安全的方式
+        print(error_msg.encode('ascii', errors='replace').decode('ascii'))
+    
+    # 保存详细错误信息到文件
     with open("error_details.txt", "w", encoding="utf-8") as f:
-        f.write(f"执行失败: Command '{' '.join(e.cmd)}' 返回非零状态码 {e.returncode}\n\n")
+        f.write(error_msg + "\n\n")
         if e.stdout:
-            f.write("标准输出:\n")
-            f.write(e.stdout)
+            f.write("Standard Output:\n" + e.stdout)
         if e.stderr:
-            f.write("\n\n标准错误:\n")
-            f.write(e.stderr)
+            f.write("\n\nStandard Error:\n" + e.stderr)
     
-    print("错误详情已保存到 error_details.txt")
+    print("Error details saved to error_details.txt")
     
 except Exception as ex:
-    print(f"发生未知错误: {str(ex)}")
+    # 确保异常消息安全输出
+    safe_msg = str(ex).encode('ascii', errors='replace').decode('ascii')
+    print("Unexpected error occurred:", safe_msg)
