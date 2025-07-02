@@ -16,7 +16,7 @@ try:
     # 使用subprocess.run替代Popen，简化操作
     result = subprocess.run(
         "test.exe",
-        input="http://www.xfyun.cn",
+        input="http://",
         capture_output=True,
         text=True,
         encoding="utf-8",
