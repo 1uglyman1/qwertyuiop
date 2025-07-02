@@ -1,13 +1,19 @@
 import subprocess
 import os
+import sys
+import io
 
-# 设置UTF-8环境变量
+# 设置环境变量确保UTF-8编码
 env = os.environ.copy()
 env["PYTHONIOENCODING"] = "utf-8"
 env["PYTHONUTF8"] = "1"
 
+# 强制标准输出使用UTF-8编码
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 try:
-    # 执行test.exe并捕获输出
+    # 使用subprocess.run替代Popen，简化操作
     result = subprocess.run(
         "test.exe",
         input="http://www.xfyun.cn",
@@ -16,46 +22,37 @@ try:
         encoding="utf-8",
         errors="replace",  # 替换无法编码的字符
         env=env,
-        check=True  # 检查返回状态码
+        check=True  # 如果返回非零状态码，抛出异常
     )
     
-    print("Standard Output:")
-    print(result.stdout)
-    
-    print("\nStandard Error:")
-    print(result.stderr)
-    
-    print(f"\nReturn Code: {result.returncode}")
+    # 确保输出正确编码
+    print("Output:", result.stdout)
+    print("Errors:", result.stderr)
+    print(f"ret_code: {result.returncode}")
     
 except subprocess.CalledProcessError as e:
-    # 错误处理：完全使用ASCII字符
+    # 使用ASCII字符输出错误信息，避免编码问题
     print("Execution failed: Command '{}' returned non-zero exit status {}".format(
         e.cmd, e.returncode))
     
-    # 安全打印输出信息
+    # 安全地打印输出和错误信息
     if e.stdout:
-        print("\nStandard Output:")
-        print(e.stdout.encode('utf-8', errors='replace').decode('utf-8'))
-    
+        print("Standard Output:", e.stdout)
     if e.stderr:
-        print("\nStandard Error:")
-        print(e.stderr.encode('utf-8', errors='replace').decode('utf-8'))
+        print("Standard Error:", e.stderr)
     
-    # 尝试确定test.exe路径
+    # 尝试获取test.exe的完整路径（用于调试）
     try:
         which_result = subprocess.run(
-            ["where", "test.exe"],
-            capture_output=True,
+            ["where", "test.exe"], 
+            capture_output=True, 
             text=True,
             env=env
         )
-        if which_result.returncode == 0:
-            print(f"\ntest.exe location: {which_result.stdout.strip()}")
-        else:
-            print("\ntest.exe not found in PATH")
-    except Exception as ex:
-        print(f"\nError checking test.exe location: {str(ex)}")
+        print(f"test.exe location: {which_result.stdout.strip()}")
+    except:
+        print("Failed to determine test.exe location")
     
-except Exception as e:
-    # 捕获其他异常
-    print("An unexpected error occurred: " + str(e).encode('utf-8', errors='replace').decode('utf-8'))
+except Exception as ex:
+    # 捕获其他异常，确保错误信息能安全输出
+    print("Unexpected error:", str(ex).encode('utf-8', errors='replace').decode('utf-8'))
