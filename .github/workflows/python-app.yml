@@ -7,36 +7,29 @@ on:
     branches: [ "main" ]
 
 jobs:
-  scan-and-upload:
+  run-test:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
+      - name: 检出代码
         uses: actions/checkout@v4
+      
+      - name: 设置Python环境
+        uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Run qwertyuiop
+          python-version: 3.9
+      
+      - name: 执行Python脚本
         run: |
-          set PYTHONUTF8=1
           python 1.py
-
-      - name: Compress qwertyuiop directory
-        run: |
-          Remove-Item -Recurse -Force qwertyuiop
-          ls
-          move ..\qwertyuiop* .
-          tar -czf qwertyuiopResults.tar.gz qwertyuiop
-          ls
-          
-      - name: Upload compressed results
+        env:
+          PYTHONUTF8: 1
+      
+      - name: 上传日志文件
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: qwertyuiop-results
-          path: qwertyuiopResults.tar.gz
-          if-no-files-found: error
-          retention-days: 7
+          name: test-logs
+          path: |
+            test_output.txt
+            error_details.txt
+            fatal_error.log
