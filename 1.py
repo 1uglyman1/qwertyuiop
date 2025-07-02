@@ -1,13 +1,20 @@
 import subprocess
-import sys
-if sys.stdout.encoding.lower() != 'utf-8':
-    sys.stdout.reconfigure(encoding='utf-8')
+import os
+
+# Optional: set environment variable for UTF-8
+env = os.environ.copy()
+env["PYTHONIOENCODING"] = "utf-8"
+
 process = subprocess.Popen(
     "test.exe",
     stdin=subprocess.PIPE,
-    text=True
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+    env=env
 )
-process.stdin.write("http://www.xfyun.cn")
-process.stdin.close()
-return_code = process.wait()
-print(f"ret_code: {return_code}")
+output, errors = process.communicate("http://www.xfyun.cn")
+print("Output:", output)
+print("Errors:", errors)
+ret_code = process.returncode
+print(f"ret_code: {ret_code}")
