@@ -1,15 +1,16 @@
 import subprocess
-import time
-import pyautogui
 
-# 启动程序
-subprocess.Popen("test.exe")
+# 启动程序并获取标准输入流
+process = subprocess.Popen(
+    "test.exe",
+    stdin=subprocess.PIPE,
+    text=True
+)
 
-# 等待程序启动（根据实际情况调整等待时间）
-time.sleep(2)
+# 向标准输入写入参数并关闭输入流
+process.stdin.write("http://xfyun.cn")
+process.stdin.close()
 
-# 输入参数
-pyautogui.typewrite("your_parameter_here")
-
-# 按下回车键确认
-pyautogui.press("enter")
+# 等待程序执行完毕并获取返回码
+return_code = process.wait()
+print(f"程序返回码: {return_code}")
