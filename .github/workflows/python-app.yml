@@ -22,7 +22,7 @@ jobs:
 
       - name: Run qwertyuiop
         run: |
-          python main.py
+          python 1.py
 
       - name: Compress qwertyuiop directory
         run: |
