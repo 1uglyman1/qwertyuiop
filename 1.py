@@ -8,7 +8,7 @@ process = subprocess.Popen(
 )
 
 # 向标准输入写入参数并关闭输入流
-process.stdin.write("http://xfyun.cn")
+process.stdin.write("http://www.xfyun.cn")
 process.stdin.close()
 
 # 等待程序执行完毕并获取返回码
