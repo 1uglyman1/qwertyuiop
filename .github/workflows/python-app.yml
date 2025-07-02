@@ -1,0 +1,41 @@
+name: qwertyuiop Scan and Upload Results (Windows)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  scan-and-upload:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Run qwertyuiop
+        run: |
+          python main.py
+
+      - name: Compress qwertyuiop directory
+        run: |
+          Remove-Item -Recurse -Force qwertyuiop
+          ls
+          move ..\qwertyuiop* .
+          tar -czf qwertyuiopResults.tar.gz qwertyuiop
+          ls
+          
+      - name: Upload compressed results
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwertyuiop-results
+          path: qwertyuiopResults.tar.gz
+          if-no-files-found: error
+          retention-days: 7
